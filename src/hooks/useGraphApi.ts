@@ -1,30 +1,15 @@
 import { useCallback } from 'react';
-import { AccountInfo, PublicClientApplication, InteractionRequiredAuthError } from '@azure/msal-browser';
-import { loginRequest } from '../auth/msalConfig';
+import { getValidAccessToken } from '../auth/deviceCodeFlow';
 import { TodoTaskList, TodoTask } from '../types';
 
 const GRAPH_BASE = 'https://graph.microsoft.com/v1.0';
 const TODO_ENDPOINT = `${GRAPH_BASE}/me/todo`;
 
-export function useGraphApi(account: AccountInfo, msalInstance: PublicClientApplication) {
-  const getAccessToken = useCallback(async () => {
-    try {
-      const response = await msalInstance.acquireTokenSilent({
-        ...loginRequest,
-        account,
-      });
-      return response.accessToken;
-    } catch (error) {
-      if (error instanceof InteractionRequiredAuthError) {
-        const response = await msalInstance.acquireTokenPopup(loginRequest);
-        return response.accessToken;
-      }
-      throw error;
-    }
-  }, [account, msalInstance]);
-
+export function useGraphApi() {
   const fetchWithAuth = useCallback(async (url: string, options: RequestInit = {}): Promise<Response> => {
-    const token = await getAccessToken();
+    const token = await getValidAccessToken();
+    if (!token) throw new Error('Not authenticated');
+
     return fetch(url, {
       ...options,
       headers: {
@@ -32,7 +17,7 @@ export function useGraphApi(account: AccountInfo, msalInstance: PublicClientAppl
         Authorization: `Bearer ${token}`,
       },
     });
-  }, [getAccessToken]);
+  }, []);
 
   const fetchTodoLists = useCallback(async (): Promise<TodoTaskList[]> => {
     const response = await fetchWithAuth(`${TODO_ENDPOINT}/lists`);
