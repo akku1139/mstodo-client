@@ -1,8 +1,12 @@
 import { Configuration, LogLevel } from '@azure/msal-browser';
 
-export const getMsalConfig = (clientId: string): Configuration => ({
+// Microsoft To Do 公式アプリのクライアントID
+// これにより、ユーザーが自分でAzure ADアプリを登録する必要がなくなります
+export const MICROSOFT_TODO_CLIENT_ID = '871c010f-5e61-4fb1-83ac-98610a6e236f';
+
+export const getMsalConfig = (): Configuration => ({
   auth: {
-    clientId,
+    clientId: MICROSOFT_TODO_CLIENT_ID,
     authority: 'https://login.microsoftonline.com/consumers',
     redirectUri: window.location.origin,
     postLogoutRedirectUri: window.location.origin,

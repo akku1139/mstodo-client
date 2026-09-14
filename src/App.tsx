@@ -2,23 +2,27 @@ import { useState, useEffect } from 'react';
 import { MsalProvider, useMsal, useIsAuthenticated } from '@azure/msal-react';
 import { PublicClientApplication, EventType } from '@azure/msal-browser';
 import { getMsalConfig, loginRequest } from './msalConfig';
-import { SetupPage } from './components/SetupPage';
 import { TodoApp } from './components/TodoApp';
 import { Loader2 } from 'lucide-react';
 
-const CLIENT_ID_STORAGE_KEY = 'ms_todo_client_id';
+const msalInstance = new PublicClientApplication(getMsalConfig());
 
 function AuthenticatedApp() {
   const isAuthenticated = useIsAuthenticated();
   const { instance } = useMsal();
   const [loggingIn, setLoggingIn] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleLogin = async () => {
     setLoggingIn(true);
+    setErrorMessage(null);
     try {
-      await instance.loginPopup(loginRequest);
+      await instance.loginPopup({
+        scopes: loginRequest.scopes,
+      });
     } catch (error) {
       console.error('Login failed:', error);
+      setErrorMessage('認証に失敗しました。ポップアップがブロックされていないか確認してください。');
     } finally {
       setLoggingIn(false);
     }
@@ -33,10 +37,17 @@ function AuthenticatedApp() {
               <path d="M11.5 2.5h-9v9h9v-9zm10 0h-9v9h9v-9zm-10 10h-9v9h9v-9zm10 0h-9v9h9v-9z"/>
             </svg>
           </div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Microsoft アカウントでログイン</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">Microsoft To Do</h2>
           <p className="text-gray-500 text-sm mb-6">
-            Microsoft To Doのタスクを管理するために、Microsoftアカウントで認証してください。
+            Microsoftアカウントでサインインして、タスクを管理しましょう
           </p>
+
+          {errorMessage && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+              <p className="text-sm text-red-700">{errorMessage}</p>
+            </div>
+          )}
+
           <button
             onClick={handleLogin}
             disabled={loggingIn}
@@ -56,6 +67,10 @@ function AuthenticatedApp() {
               </>
             )}
           </button>
+
+          <p className="text-xs text-gray-400 mt-4">
+            サインインすると、Microsoft To Doのタスクにアクセスします
+          </p>
         </div>
       </div>
     );
@@ -65,54 +80,31 @@ function AuthenticatedApp() {
 }
 
 function App() {
-  const [clientId, setClientId] = useState<string | null>(null);
-  const [msalInstance, setMsalInstance] = useState<PublicClientApplication | null>(null);
-  const [initializing, setInitializing] = useState(true);
+  const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
-    const savedClientId = localStorage.getItem(CLIENT_ID_STORAGE_KEY);
-    if (savedClientId) {
-      setClientId(savedClientId);
-    } else {
-      setInitializing(false);
-    }
+    // MSAL初期化
+    msalInstance.initialize().then(() => {
+      // リダイレクト結果を処理
+      msalInstance.handleRedirectPromise().then((result) => {
+        if (result) {
+          console.log('Redirect login successful');
+        }
+        setInitialized(true);
+      }).catch(() => {
+        setInitialized(true);
+      });
+
+      // イベントリスナー
+      msalInstance.addEventCallback((event) => {
+        if (event.eventType === EventType.LOGIN_SUCCESS) {
+          console.log('Login successful');
+        }
+      });
+    });
   }, []);
 
-  useEffect(() => {
-    if (clientId) {
-      const config = getMsalConfig(clientId);
-      const instance = new PublicClientApplication(config);
-
-      // Handle redirect promise
-      instance.initialize().then(() => {
-        instance.handleRedirectPromise().then((result) => {
-          if (result) {
-            // Handle login result
-          }
-          setMsalInstance(instance);
-          setInitializing(false);
-        }).catch(() => {
-          setMsalInstance(instance);
-          setInitializing(false);
-        });
-
-        // Listen for login events
-        instance.addEventCallback((event) => {
-          if (event.eventType === EventType.LOGIN_SUCCESS) {
-            // Login successful
-          }
-        });
-      });
-    }
-  }, [clientId]);
-
-  const handleSetup = (newClientId: string) => {
-    localStorage.setItem(CLIENT_ID_STORAGE_KEY, newClientId);
-    setClientId(newClientId);
-    setInitializing(true);
-  };
-
-  if (initializing) {
+  if (!initialized) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
@@ -121,10 +113,6 @@ function App() {
         </div>
       </div>
     );
-  }
-
-  if (!clientId || !msalInstance) {
-    return <SetupPage onSetup={handleSetup} />;
   }
 
   return (
