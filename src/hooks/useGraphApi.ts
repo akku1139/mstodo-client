@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { getValidAccessToken } from '../auth/deviceCodeFlow';
 import { TodoTaskList, TodoTask } from '../types';
 
@@ -97,7 +97,7 @@ export function useGraphApi() {
     return response.json();
   }, [fetchWithAuth]);
 
-  return {
+  return useMemo(() => ({
     fetchTodoLists,
     fetchTasks,
     createTask,
@@ -106,5 +106,5 @@ export function useGraphApi() {
     createList,
     deleteList,
     getUserInfo,
-  };
+  }), [fetchTodoLists, fetchTasks, createTask, updateTask, deleteTask, createList, deleteList, getUserInfo]);
 }
