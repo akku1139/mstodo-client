@@ -75,7 +75,10 @@ function App() {
       const result = await getValidAccessToken();
       if (result.status === 'expired' || result.status === 'no_account') {
         setAuthState('unauthenticated');
-        setError('Your session has expired. Please sign in again.');
+        const reason = result.status === 'expired' && result.reason 
+          ? `Session expired: ${result.reason}`
+          : 'Your session has expired. Please sign in again.';
+        setError(reason);
       }
       // If status is 'valid' or 'refreshed', token is good
     };
@@ -83,10 +86,22 @@ function App() {
     // Check token status every 2 minutes to proactively refresh
     const interval = setInterval(checkAndRefreshToken, 2 * 60 * 1000);
     
+    // Also check when tab becomes visible again
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        checkAndRefreshToken();
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
     // Also check immediately on mount
     checkAndRefreshToken();
     
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, [authState]);
 
   const handleCopyCode = () => {

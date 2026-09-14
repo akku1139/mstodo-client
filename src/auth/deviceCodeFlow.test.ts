@@ -328,7 +328,7 @@ describe('deviceCodeFlow', () => {
 
       saveAccountInfo(accountInfo);
 
-      (global.fetch as any).mockResolvedValueOnce({
+      (global.fetch as any).mockResolvedValue({
         ok: false,
         json: async () => ({ error_description: 'Invalid refresh token' }),
       });
@@ -336,6 +336,9 @@ describe('deviceCodeFlow', () => {
       const result = await getValidAccessToken();
 
       expect(result.status).toBe('expired');
+      if (result.status === 'expired') {
+        expect(result.reason).toBeTruthy();
+      }
       // キャッシュはクリアされない（再ログインを促すため）
       expect(getAccountInfo()).not.toBeNull();
     });

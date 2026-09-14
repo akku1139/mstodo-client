@@ -176,7 +176,7 @@ export function clearAccountInfo(): void {
 export type TokenResult = 
   | { status: 'valid'; accessToken: string }
   | { status: 'refreshed'; accessToken: string }
-  | { status: 'expired' }
+  | { status: 'expired'; reason: string }
   | { status: 'no_account' };
 
 /**
@@ -222,5 +222,5 @@ export async function getValidAccessToken(): Promise<TokenResult> {
 
   // すべてのリトライが失敗した場合
   console.error('All refresh attempts failed:', lastError);
-  return { status: 'expired' };
+  return { status: 'expired', reason: lastError?.message || 'Unknown error' };
 }
