@@ -40,6 +40,19 @@ export function TodoApp({ onLogout }: TodoAppProps) {
     loadUserInfo();
   }, []);
 
+  // Proactively refresh token while app is active
+  useEffect(() => {
+    const refreshTimer = setInterval(async () => {
+      try {
+        await api.getUserInfo(); // This will trigger token refresh if needed
+      } catch (error) {
+        console.error('Token refresh failed:', error);
+      }
+    }, 3 * 60 * 1000); // Check every 3 minutes
+
+    return () => clearInterval(refreshTimer);
+  }, [api]);
+
   const loadUserInfo = async () => {
     try {
       const user = await api.getUserInfo();

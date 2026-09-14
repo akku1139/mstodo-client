@@ -67,20 +67,25 @@ function App() {
     setDeviceCode(null);
   };
 
-  // Check token status periodically
+  // Check and refresh token proactively
   useEffect(() => {
     if (authState !== 'authenticated') return;
 
-    const checkTokenStatus = async () => {
+    const checkAndRefreshToken = async () => {
       const result = await getValidAccessToken();
       if (result.status === 'expired' || result.status === 'no_account') {
         setAuthState('unauthenticated');
         setError('Your session has expired. Please sign in again.');
       }
+      // If status is 'valid' or 'refreshed', token is good
     };
 
-    // Check token status every 5 minutes
-    const interval = setInterval(checkTokenStatus, 5 * 60 * 1000);
+    // Check token status every 2 minutes to proactively refresh
+    const interval = setInterval(checkAndRefreshToken, 2 * 60 * 1000);
+    
+    // Also check immediately on mount
+    checkAndRefreshToken();
+    
     return () => clearInterval(interval);
   }, [authState]);
 

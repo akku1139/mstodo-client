@@ -186,29 +186,41 @@ export async function getValidAccessToken(): Promise<TokenResult> {
   const account = getAccountInfo();
   if (!account) return { status: 'no_account' };
 
-  // トークンがまだ有効かチェック（5分の余裕を持たせる）
+  // トークンがまだ有効かチェック（10分の余裕を持たせる）
   const now = Date.now();
-  const bufferTime = 5 * 60 * 1000; // 5分
+  const bufferTime = 10 * 60 * 1000; // 10分
 
   if (account.expiresAt > now + bufferTime) {
     return { status: 'valid', accessToken: account.accessToken };
   }
 
-  // トークンを更新
-  try {
-    const tokenResponse = await refreshAccessToken(account.refreshToken);
-    const newAccount: AccountInfo = {
-      accessToken: tokenResponse.access_token,
-      refreshToken: tokenResponse.refresh_token,
-      expiresAt: now + tokenResponse.expires_in * 1000,
-      idToken: tokenResponse.id_token,
-    };
-    saveAccountInfo(newAccount);
-    return { status: 'refreshed', accessToken: newAccount.accessToken };
-  } catch (error) {
-    console.error('Failed to refresh token:', error);
-    // リフレッシュに失敗しても即座にクリアしない
-    // ユーザーに再ログインを促すためにexpired状態を返す
-    return { status: 'expired' };
+  // トークンを更新（リトライ付き）
+  const maxRetries = 3;
+  let lastError: Error | null = null;
+
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      const tokenResponse = await refreshAccessToken(account.refreshToken);
+      const newAccount: AccountInfo = {
+        accessToken: tokenResponse.access_token,
+        refreshToken: tokenResponse.refresh_token || account.refreshToken, // 新しいリフレッシュトークンがない場合は古いものを使用
+        expiresAt: now + tokenResponse.expires_in * 1000,
+        idToken: tokenResponse.id_token || account.idToken,
+      };
+      saveAccountInfo(newAccount);
+      return { status: 'refreshed', accessToken: newAccount.accessToken };
+    } catch (error) {
+      lastError = error as Error;
+      console.error(`Failed to refresh token (attempt ${i + 1}/${maxRetries}):`, error);
+      
+      // 最後の試行でなければ、少し待ってからリトライ
+      if (i < maxRetries - 1) {
+        await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1))); // 1秒、2秒、3秒待機
+      }
+    }
   }
+
+  // すべてのリトライが失敗した場合
+  console.error('All refresh attempts failed:', lastError);
+  return { status: 'expired' };
 }
