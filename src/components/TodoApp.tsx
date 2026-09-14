@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { PublicClientApplication, AccountInfo } from '@azure/msal-browser';
 import { useGraphApi } from '../hooks/useGraphApi';
 import { TodoTaskList, TodoTask } from '../types';
 import {
@@ -17,11 +18,13 @@ import {
 } from 'lucide-react';
 
 interface TodoAppProps {
-  onLogout: () => void;
+  account: AccountInfo;
+  msalInstance: PublicClientApplication;
+  onLogout: () => Promise<void>;
 }
 
-export function TodoApp({ onLogout }: TodoAppProps) {
-  const api = useGraphApi();
+export function TodoApp({ account, msalInstance, onLogout }: TodoAppProps) {
+  const api = useGraphApi(account, msalInstance);
 
   const [lists, setLists] = useState<TodoTaskList[]>([]);
   const [selectedListId, setSelectedListId] = useState<string | null>(null);
@@ -151,8 +154,8 @@ export function TodoApp({ onLogout }: TodoAppProps) {
     }
   };
 
-  const handleLogout = () => {
-    onLogout();
+  const handleLogout = async () => {
+    await onLogout();
   };
 
   const selectedList = lists.find(l => l.id === selectedListId);
