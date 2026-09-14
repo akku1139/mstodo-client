@@ -388,21 +388,33 @@ export function TodoApp({ onLogout }: TodoAppProps) {
             </div>
             <div className="p-2 border-t border-gray-100">
               {showNewListForm ? (
-                <form onSubmit={handleCreateList} className="flex gap-2">
+                <form onSubmit={handleCreateList} className="space-y-2">
                   <input
                     type="text"
                     value={newListName}
                     onChange={(e) => setNewListName(e.target.value)}
                     placeholder="List name"
-                    className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                     autoFocus
                   />
-                  <button
-                    type="submit"
-                    className="px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700"
-                  >
-                    Create
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      type="submit"
+                      className="flex-1 px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700"
+                    >
+                      Create
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowNewListForm(false);
+                        setNewListName('');
+                      }}
+                      className="flex-1 px-3 py-2 bg-gray-100 text-gray-700 text-sm rounded-lg hover:bg-gray-200"
+                    >
+                      Cancel
+                    </button>
+                  </div>
                 </form>
               ) : (
                 <button
