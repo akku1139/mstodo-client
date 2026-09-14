@@ -26,8 +26,8 @@ function App() {
   }, []);
 
   const checkAuth = async () => {
-    const token = await getValidAccessToken();
-    if (token) {
+    const result = await getValidAccessToken();
+    if (result.status === 'valid' || result.status === 'refreshed') {
       setAuthState('authenticated');
     } else {
       setAuthState('unauthenticated');
@@ -69,6 +69,23 @@ function App() {
     setAuthState('unauthenticated');
     setDeviceCode(null);
   };
+
+  // 定期的にトークンの状態をチェック
+  useEffect(() => {
+    if (authState !== 'authenticated') return;
+
+    const checkTokenStatus = async () => {
+      const result = await getValidAccessToken();
+      if (result.status === 'expired' || result.status === 'no_account') {
+        setAuthState('unauthenticated');
+        setError(t('auth.sessionExpired'));
+      }
+    };
+
+    // 5分ごとにトークンの状態をチェック
+    const interval = setInterval(checkTokenStatus, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [authState, t]);
 
   const handleCopyCode = () => {
     if (deviceCode) {

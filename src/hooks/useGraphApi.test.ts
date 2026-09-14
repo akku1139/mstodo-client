@@ -27,7 +27,7 @@ describe('useGraphApi', () => {
         ],
       };
 
-      vi.mocked(deviceCodeFlow.getValidAccessToken).mockResolvedValue(mockToken);
+      vi.mocked(deviceCodeFlow.getValidAccessToken).mockResolvedValue({ status: 'valid', accessToken: mockToken });
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
         json: async () => mockLists,
@@ -49,15 +49,15 @@ describe('useGraphApi', () => {
     });
 
     it('認証されていない場合はエラーをスローする', async () => {
-      vi.mocked(deviceCodeFlow.getValidAccessToken).mockResolvedValue(null);
+      vi.mocked(deviceCodeFlow.getValidAccessToken).mockResolvedValue({ status: 'no_account' });
 
       const { result } = renderHook(() => useGraphApi());
 
-      await expect(result.current.fetchTodoLists()).rejects.toThrow('Not authenticated');
+      await expect(result.current.fetchTodoLists()).rejects.toThrow('Authentication required');
     });
 
     it('APIエラー時に例外をスローする', async () => {
-      vi.mocked(deviceCodeFlow.getValidAccessToken).mockResolvedValue('valid-token');
+      vi.mocked(deviceCodeFlow.getValidAccessToken).mockResolvedValue({ status: 'valid', accessToken: 'valid-token' });
       (global.fetch as any).mockResolvedValueOnce({
         ok: false,
         statusText: 'Internal Server Error',
@@ -81,7 +81,7 @@ describe('useGraphApi', () => {
         ],
       };
 
-      vi.mocked(deviceCodeFlow.getValidAccessToken).mockResolvedValue(mockToken);
+      vi.mocked(deviceCodeFlow.getValidAccessToken).mockResolvedValue({ status: 'valid', accessToken: mockToken });
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
         json: async () => mockTasks,
@@ -115,7 +115,7 @@ describe('useGraphApi', () => {
         status: 'notStarted',
       };
 
-      vi.mocked(deviceCodeFlow.getValidAccessToken).mockResolvedValue(mockToken);
+      vi.mocked(deviceCodeFlow.getValidAccessToken).mockResolvedValue({ status: 'valid', accessToken: mockToken });
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
         json: async () => mockTask,
@@ -152,7 +152,7 @@ describe('useGraphApi', () => {
         status: 'completed',
       };
 
-      vi.mocked(deviceCodeFlow.getValidAccessToken).mockResolvedValue(mockToken);
+      vi.mocked(deviceCodeFlow.getValidAccessToken).mockResolvedValue({ status: 'valid', accessToken: mockToken });
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
         json: async () => mockTask,
@@ -186,7 +186,7 @@ describe('useGraphApi', () => {
     it('タスクを正常に削除できる', async () => {
       const mockToken = 'valid-access-token';
 
-      vi.mocked(deviceCodeFlow.getValidAccessToken).mockResolvedValue(mockToken);
+      vi.mocked(deviceCodeFlow.getValidAccessToken).mockResolvedValue({ status: 'valid', accessToken: mockToken });
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
       });
@@ -217,7 +217,7 @@ describe('useGraphApi', () => {
         displayName: '新しいリスト',
       };
 
-      vi.mocked(deviceCodeFlow.getValidAccessToken).mockResolvedValue(mockToken);
+      vi.mocked(deviceCodeFlow.getValidAccessToken).mockResolvedValue({ status: 'valid', accessToken: mockToken });
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
         json: async () => mockList,
@@ -246,7 +246,7 @@ describe('useGraphApi', () => {
     it('リストを正常に削除できる', async () => {
       const mockToken = 'valid-access-token';
 
-      vi.mocked(deviceCodeFlow.getValidAccessToken).mockResolvedValue(mockToken);
+      vi.mocked(deviceCodeFlow.getValidAccessToken).mockResolvedValue({ status: 'valid', accessToken: mockToken });
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
       });
@@ -274,7 +274,7 @@ describe('useGraphApi', () => {
         userPrincipalName: 'tanaka@example.com',
       };
 
-      vi.mocked(deviceCodeFlow.getValidAccessToken).mockResolvedValue(mockToken);
+      vi.mocked(deviceCodeFlow.getValidAccessToken).mockResolvedValue({ status: 'valid', accessToken: mockToken });
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
         json: async () => mockUser,

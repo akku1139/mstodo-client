@@ -7,8 +7,13 @@ const TODO_ENDPOINT = `${GRAPH_BASE}/me/todo`;
 
 export function useGraphApi() {
   const fetchWithAuth = useCallback(async (url: string, options: RequestInit = {}): Promise<Response> => {
-    const token = await getValidAccessToken();
-    if (!token) throw new Error('Not authenticated');
+    const result = await getValidAccessToken();
+    
+    if (result.status === 'no_account' || result.status === 'expired') {
+      throw new Error('Authentication required');
+    }
+
+    const token = result.accessToken;
 
     // Convert Graph API URL to proxy URL
     const proxyUrl = url.replace(

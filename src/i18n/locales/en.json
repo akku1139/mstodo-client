@@ -10,7 +10,8 @@
     "signInSubtitle": "Sign in with your Microsoft account to manage your tasks",
     "signingIn": "Signing in...",
     "authAs": "Authenticated as \"Microsoft Graph Command Line Tools\"",
-    "permissions": "Only requests Tasks.ReadWrite permission"
+    "permissions": "Only requests Tasks.ReadWrite permission",
+    "sessionExpired": "Your session has expired. Please sign in again."
   },
   "lists": {
     "smartLists": "Smart Lists",

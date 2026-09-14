@@ -265,9 +265,12 @@ describe('deviceCodeFlow', () => {
       };
 
       saveAccountInfo(accountInfo);
-      const token = await getValidAccessToken();
+      const result = await getValidAccessToken();
 
-      expect(token).toBe('valid-access-token');
+      expect(result.status).toBe('valid');
+      if (result.status === 'valid') {
+        expect(result.accessToken).toBe('valid-access-token');
+      }
       expect(global.fetch).not.toHaveBeenCalled();
     });
 
@@ -296,9 +299,12 @@ describe('deviceCodeFlow', () => {
         json: async () => newTokenResponse,
       });
 
-      const token = await getValidAccessToken();
+      const result = await getValidAccessToken();
 
-      expect(token).toBe('new-access-token');
+      expect(result.status).toBe('refreshed');
+      if (result.status === 'refreshed') {
+        expect(result.accessToken).toBe('new-access-token');
+      }
       expect(global.fetch).toHaveBeenCalledTimes(1);
 
       // キャッシュが更新されていることを確認
@@ -306,13 +312,13 @@ describe('deviceCodeFlow', () => {
       expect(updatedAccount?.accessToken).toBe('new-access-token');
     });
 
-    it('アカウント情報がない場合はnullを返す', async () => {
-      const token = await getValidAccessToken();
+    it('アカウント情報がない場合はno_accountを返す', async () => {
+      const result = await getValidAccessToken();
 
-      expect(token).toBeNull();
+      expect(result.status).toBe('no_account');
     });
 
-    it('トークン更新に失敗した場合はキャッシュをクリアしてnullを返す', async () => {
+    it('トークン更新に失敗した場合はexpiredを返す', async () => {
       const accountInfo = {
         accessToken: 'expired-access-token',
         refreshToken: 'invalid-refresh-token',
@@ -327,10 +333,11 @@ describe('deviceCodeFlow', () => {
         json: async () => ({ error_description: 'Invalid refresh token' }),
       });
 
-      const token = await getValidAccessToken();
+      const result = await getValidAccessToken();
 
-      expect(token).toBeNull();
-      expect(getAccountInfo()).toBeNull();
+      expect(result.status).toBe('expired');
+      // キャッシュはクリアされない（再ログインを促すため）
+      expect(getAccountInfo()).not.toBeNull();
     });
   });
 });

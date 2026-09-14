@@ -10,7 +10,8 @@
     "signInSubtitle": "Microsoftアカウントでサインインしてタスクを管理",
     "signingIn": "認証中...",
     "authAs": "「Microsoft Graph Command Line Tools」として認証されます",
-    "permissions": "Tasks.ReadWrite の権限のみを要求します"
+    "permissions": "Tasks.ReadWrite の権限のみを要求します",
+    "sessionExpired": "セッションが期限切れになりました。再度サインインしてください。"
   },
   "lists": {
     "smartLists": "スマートリスト",

@@ -171,18 +171,27 @@ export function clearAccountInfo(): void {
 }
 
 /**
+ * トークン更新の結果
+ */
+export type TokenResult = 
+  | { status: 'valid'; accessToken: string }
+  | { status: 'refreshed'; accessToken: string }
+  | { status: 'expired' }
+  | { status: 'no_account' };
+
+/**
  * 有効なアクセストークンを取得（キャッシュまたは更新）
  */
-export async function getValidAccessToken(): Promise<string | null> {
+export async function getValidAccessToken(): Promise<TokenResult> {
   const account = getAccountInfo();
-  if (!account) return null;
+  if (!account) return { status: 'no_account' };
 
   // トークンがまだ有効かチェック（5分の余裕を持たせる）
   const now = Date.now();
   const bufferTime = 5 * 60 * 1000; // 5分
 
   if (account.expiresAt > now + bufferTime) {
-    return account.accessToken;
+    return { status: 'valid', accessToken: account.accessToken };
   }
 
   // トークンを更新
@@ -195,10 +204,11 @@ export async function getValidAccessToken(): Promise<string | null> {
       idToken: tokenResponse.id_token,
     };
     saveAccountInfo(newAccount);
-    return newAccount.accessToken;
+    return { status: 'refreshed', accessToken: newAccount.accessToken };
   } catch (error) {
     console.error('Failed to refresh token:', error);
-    clearAccountInfo();
-    return null;
+    // リフレッシュに失敗しても即座にクリアしない
+    // ユーザーに再ログインを促すためにexpired状態を返す
+    return { status: 'expired' };
   }
 }
