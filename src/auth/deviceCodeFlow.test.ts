@@ -101,6 +101,13 @@ describe('deviceCodeFlow', () => {
         id_token: 'id-token-123',
       };
 
+      // setTimeoutをモックして即座に解決
+      const originalSetTimeout = global.setTimeout;
+      global.setTimeout = ((fn: () => void) => {
+        fn();
+        return 0 as any;
+      }) as any;
+
       (global.fetch as any)
         .mockResolvedValueOnce({
           ok: false,
@@ -111,31 +118,56 @@ describe('deviceCodeFlow', () => {
           json: async () => mockTokenResponse,
         });
 
-      const result = await pollForToken('device-code-123', 0.01, 900);
-
-      expect(result).toEqual(mockTokenResponse);
+      try {
+        const result = await pollForToken('device-code-123', 0.01, 900);
+        expect(result).toEqual(mockTokenResponse);
+      } finally {
+        global.setTimeout = originalSetTimeout;
+      }
     });
 
     it('expired_token時に例外をスローする', async () => {
+      // setTimeoutをモックして即座に解決
+      const originalSetTimeout = global.setTimeout;
+      global.setTimeout = ((fn: () => void) => {
+        fn();
+        return 0 as any;
+      }) as any;
+
       (global.fetch as any).mockResolvedValueOnce({
         ok: false,
         json: async () => ({ error: 'expired_token' }),
       });
 
-      await expect(pollForToken('device-code-123', 0.01, 900)).rejects.toThrow(
-        'Device code expired'
-      );
+      try {
+        await expect(pollForToken('device-code-123', 0.01, 900)).rejects.toThrow(
+          'Device code expired. Please try again.'
+        );
+      } finally {
+        global.setTimeout = originalSetTimeout;
+      }
     });
 
     it('authorization_declined時に例外をスローする', async () => {
+      // setTimeoutをモックして即座に解決
+      const originalSetTimeout = global.setTimeout;
+      global.setTimeout = ((fn: () => void) => {
+        fn();
+        return 0 as any;
+      }) as any;
+
       (global.fetch as any).mockResolvedValueOnce({
         ok: false,
         json: async () => ({ error: 'authorization_declined' }),
       });
 
-      await expect(pollForToken('device-code-123', 0.01, 900)).rejects.toThrow(
-        'User declined authorization'
-      );
+      try {
+        await expect(pollForToken('device-code-123', 0.01, 900)).rejects.toThrow(
+          'User declined authorization.'
+        );
+      } finally {
+        global.setTimeout = originalSetTimeout;
+      }
     });
   });
 
