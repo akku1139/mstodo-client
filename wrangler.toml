@@ -1,0 +1,9 @@
+name = "microsoft-todo-app"
+compatibility_date = "2024-01-01"
+
+[build]
+command = "npm run build"
+output_dir = "dist"
+
+[site]
+bucket = "./dist"
