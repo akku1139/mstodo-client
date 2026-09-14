@@ -1,14 +1,14 @@
 import { Configuration, LogLevel } from '@azure/msal-browser';
 
-// Microsoft Teams Web のクライアントID（SPAとして登録済み）
-export const MS_CLIENT_ID = '5e3ce6c0-2b1f-4285-8d4b-75ee78787346';
+// Microsoft Graph CLI のクライアントID
+export const MS_CLIENT_ID = '14d82eec-204b-4c2f-b7e8-296a70dab67e';
 
 export const msalConfig: Configuration = {
   auth: {
     clientId: MS_CLIENT_ID,
     authority: 'https://login.microsoftonline.com/common',
-    redirectUri: window.location.origin,
-    postLogoutRedirectUri: window.location.origin,
+    redirectUri: 'https://login.microsoftonline.com/common/oauth2/nativeclient',
+    postLogoutRedirectUri: 'https://login.microsoftonline.com/common/oauth2/nativeclient',
   },
   cache: {
     cacheLocation: 'localStorage',
