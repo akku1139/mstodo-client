@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 import {
   startDeviceCodeFlow,
   pollForToken,
@@ -10,12 +9,10 @@ import {
 } from './auth/deviceCodeFlow';
 import { TodoApp } from './components/TodoApp';
 import { Loader2, CheckCircle, ExternalLink, Copy } from 'lucide-react';
-import './i18n';
 
 type AuthState = 'loading' | 'unauthenticated' | 'authenticating' | 'authenticated';
 
 function App() {
-  const { t } = useTranslation();
   const [authState, setAuthState] = useState<AuthState>('loading');
   const [deviceCode, setDeviceCode] = useState<DeviceCodeResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -59,7 +56,7 @@ function App() {
 
       setAuthState('authenticated');
     } catch (err) {
-      setError(err instanceof Error ? err.message : '認証に失敗しました');
+      setError(err instanceof Error ? err.message : 'Authentication failed');
       setAuthState('unauthenticated');
     }
   };
@@ -70,7 +67,7 @@ function App() {
     setDeviceCode(null);
   };
 
-  // 定期的にトークンの状態をチェック
+  // Check token status periodically
   useEffect(() => {
     if (authState !== 'authenticated') return;
 
@@ -78,14 +75,14 @@ function App() {
       const result = await getValidAccessToken();
       if (result.status === 'expired' || result.status === 'no_account') {
         setAuthState('unauthenticated');
-        setError(t('auth.sessionExpired'));
+        setError('Your session has expired. Please sign in again.');
       }
     };
 
-    // 5分ごとにトークンの状態をチェック
+    // Check token status every 5 minutes
     const interval = setInterval(checkTokenStatus, 5 * 60 * 1000);
     return () => clearInterval(interval);
-  }, [authState, t]);
+  }, [authState]);
 
   const handleCopyCode = () => {
     if (deviceCode) {
@@ -100,7 +97,7 @@ function App() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
         <div className="text-center">
           <Loader2 className="w-8 h-8 text-blue-600 animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">{t('app.loading')}</p>
+          <p className="text-gray-600">Loading...</p>
         </div>
       </div>
     );
@@ -119,9 +116,9 @@ function App() {
               <path d="M11.5 2.5h-9v9h9v-9zm10 0h-9v9h9v-9zm-10 10h-9v9h9v-9zm10 0h-9v9h9v-9z"/>
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">{t('app.title')}</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Microsoft To Do</h1>
           <p className="text-gray-500 text-sm">
-            {t('auth.signInSubtitle')}
+            Sign in with your Microsoft account to manage your tasks
           </p>
         </div>
 
@@ -137,7 +134,7 @@ function App() {
               <div className="flex items-center gap-2 mb-3">
                 <CheckCircle className="w-5 h-5 text-blue-600" />
                 <p className="text-sm font-medium text-blue-900">
-                  {t('deviceCode.enterCode')}
+                  Please enter the following code
                 </p>
               </div>
 
@@ -169,27 +166,27 @@ function App() {
                     rel="noopener noreferrer"
                     className="text-blue-600 hover:underline inline-flex items-center gap-1 font-medium"
                   >
-                    {t('deviceCode.step1', { url: deviceCode.verification_uri })}
+                    Open {deviceCode.verification_uri}
                     <ExternalLink className="w-3 h-3" />
                   </a>
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="font-bold text-blue-600">2.</span>
-                  <span>{t('deviceCode.step2')}</span>
+                  <span>Enter the code above</span>
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="font-bold text-blue-600">3.</span>
-                  <span>{t('deviceCode.step3')}</span>
+                  <span>Sign in with your Microsoft account</span>
                 </div>
               </div>
 
               <div className="mt-4 flex items-center justify-center gap-2 text-sm text-blue-600">
                 <Loader2 className="w-4 h-4 animate-spin" />
-                <span>{t('deviceCode.waiting')}</span>
+                <span>Waiting for authentication...</span>
               </div>
 
               <p className="text-xs text-blue-500 mt-3 text-center">
-                {t('deviceCode.expiresIn', { minutes: Math.round(deviceCode.expires_in / 60) })}
+                Code expires in {Math.round(deviceCode.expires_in / 60)} minutes
               </p>
             </div>
           </div>
@@ -203,21 +200,21 @@ function App() {
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
               <path d="M11.5 2.5h-9v9h9v-9zm10 0h-9v9h9v-9zm-10 10h-9v9h9v-9zm10 0h-9v9h9v-9z"/>
             </svg>
-            {t('auth.signIn')}
+            Sign in with Microsoft
           </button>
         )}
 
         {authState === 'authenticating' && !deviceCode && (
           <div className="flex items-center justify-center gap-2 text-gray-600">
             <Loader2 className="w-5 h-5 animate-spin" />
-            <span>{t('deviceCode.fetchingCode')}</span>
+            <span>Fetching device code...</span>
           </div>
         )}
 
         <p className="text-xs text-gray-400 mt-4 text-center">
-          {t('auth.authAs')}
+          Authenticated as "Microsoft Graph Command Line Tools"
           <br />
-          {t('auth.permissions')}
+          Only requests Tasks.ReadWrite permission
         </p>
       </div>
     </div>

@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useTranslation } from 'react-i18next';
 import { useGraphApi } from '../hooks/useGraphApi';
 import { TodoTaskList, TodoTask } from '../types';
 import {
@@ -21,7 +20,6 @@ interface TodoAppProps {
 }
 
 export function TodoApp({ onLogout }: TodoAppProps) {
-  const { t } = useTranslation();
   const api = useGraphApi();
 
   const [lists, setLists] = useState<TodoTaskList[]>([]);
@@ -61,7 +59,7 @@ export function TodoApp({ onLogout }: TodoAppProps) {
         setSelectedListId(data[0].id);
       }
     } catch (err) {
-      setError(t('tasks.listFetchFailed'));
+      setError('Failed to fetch lists');
       console.error(err);
     } finally {
       setLoading(false);
@@ -74,7 +72,7 @@ export function TodoApp({ onLogout }: TodoAppProps) {
       const data = await api.fetchTasks(listId);
       setTasks(data);
     } catch (err) {
-      setError(t('tasks.taskFetchFailed'));
+      setError('Failed to fetch tasks');
       console.error(err);
     } finally {
       setTasksLoading(false);
@@ -83,7 +81,7 @@ export function TodoApp({ onLogout }: TodoAppProps) {
 
   useEffect(() => {
     if (smartFilter) {
-      // スマートリストが選択されている場合、すべてのリストからタスクを取得
+      // When smart list is selected, fetch tasks from all lists
       const loadAllTasks = async () => {
         setTasksLoading(true);
         try {
@@ -94,7 +92,7 @@ export function TodoApp({ onLogout }: TodoAppProps) {
           }
           setTasks(allTasks);
         } catch (err) {
-          setError('タスクの取得に失敗しました');
+          setError('Failed to fetch tasks');
           console.error(err);
         } finally {
           setTasksLoading(false);
@@ -120,7 +118,7 @@ export function TodoApp({ onLogout }: TodoAppProps) {
       setNewTaskTitle('');
       setNewTaskDueDate('');
     } catch (err) {
-      setError(t('tasks.createFailed'));
+      setError('Failed to create task');
       console.error(err);
     }
   };
@@ -131,7 +129,7 @@ export function TodoApp({ onLogout }: TodoAppProps) {
       const updated = await api.updateTask(selectedListId!, task.id, { status: newStatus });
       setTasks(tasks.map(task => task.id === updated.id ? updated : task));
     } catch (err) {
-      setError(t('tasks.updateFailed'));
+      setError('Failed to update task');
       console.error(err);
     }
   };
@@ -141,7 +139,7 @@ export function TodoApp({ onLogout }: TodoAppProps) {
       await api.deleteTask(selectedListId!, taskId);
       setTasks(tasks.filter(task => task.id !== taskId));
     } catch (err) {
-      setError(t('tasks.deleteFailed'));
+      setError('Failed to delete task');
       console.error(err);
     }
   };
@@ -157,7 +155,7 @@ export function TodoApp({ onLogout }: TodoAppProps) {
       });
       setTasks(tasks.map(task => task.id === taskId ? updated : task));
     } catch (err) {
-      setError(t('tasks.dueDateUpdateFailed'));
+      setError('Failed to update due date');
       console.error(err);
     }
   };
@@ -173,13 +171,13 @@ export function TodoApp({ onLogout }: TodoAppProps) {
       setNewListName('');
       setShowNewListForm(false);
     } catch (err) {
-      setError(t('tasks.listFetchFailed'));
+      setError('Failed to create list');
       console.error(err);
     }
   };
 
   const handleDeleteList = async (listId: string) => {
-    if (!confirm(t('lists.deleteConfirm'))) return;
+    if (!confirm('Are you sure you want to delete this list?')) return;
     try {
       await api.deleteList(listId);
       const remaining = lists.filter(l => l.id !== listId);
@@ -189,7 +187,7 @@ export function TodoApp({ onLogout }: TodoAppProps) {
         setTasks([]);
       }
     } catch (err) {
-      setError(t('tasks.listFetchFailed'));
+      setError('Failed to delete list');
       console.error(err);
     }
   };
@@ -200,7 +198,7 @@ export function TodoApp({ onLogout }: TodoAppProps) {
 
   const selectedList = lists.find(l => l.id === selectedListId);
   
-  // フィルタリングロジック
+  // Filtering logic
   const getFilteredTasks = () => {
     if (!smartFilter) {
       return tasks;
@@ -241,7 +239,7 @@ export function TodoApp({ onLogout }: TodoAppProps) {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
-          <p className="text-gray-600">読み込み中...</p>
+          <p className="text-gray-600">Loading...</p>
         </div>
       </div>
     );
@@ -283,7 +281,7 @@ export function TodoApp({ onLogout }: TodoAppProps) {
         <aside className="w-72 flex-shrink-0 hidden md:block">
           <div className="bg-white rounded-xl border border-gray-200 overflow-hidden mb-4">
             <div className="p-4 border-b border-gray-100">
-              <h2 className="font-semibold text-gray-900 text-sm uppercase tracking-wide">{t('lists.smartLists')}</h2>
+              <h2 className="font-semibold text-gray-900 text-sm uppercase tracking-wide">Smart Lists</h2>
             </div>
             <div className="p-2">
               <div
@@ -295,7 +293,7 @@ export function TodoApp({ onLogout }: TodoAppProps) {
                 onClick={() => setSmartFilter(smartFilter === 'today' ? null : 'today')}
               >
                 <Calendar className="w-4 h-4 flex-shrink-0" />
-                <span className="flex-1 text-sm font-medium">{t('lists.today')}</span>
+                <span className="flex-1 text-sm font-medium">Today</span>
                 <span className="text-xs text-gray-500">
                   {tasks.filter(t => {
                     if (!t.dueDateTime || t.status === 'completed') return false;
@@ -317,7 +315,7 @@ export function TodoApp({ onLogout }: TodoAppProps) {
                 onClick={() => setSmartFilter(smartFilter === 'week' ? null : 'week')}
               >
                 <Calendar className="w-4 h-4 flex-shrink-0" />
-                <span className="flex-1 text-sm font-medium">{t('lists.week')}</span>
+                <span className="flex-1 text-sm font-medium">This Week</span>
                 <span className="text-xs text-gray-500">
                   {tasks.filter(t => {
                     if (!t.dueDateTime || t.status === 'completed') return false;
@@ -339,7 +337,7 @@ export function TodoApp({ onLogout }: TodoAppProps) {
                 onClick={() => setSmartFilter(smartFilter === 'overdue' ? null : 'overdue')}
               >
                 <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                <span className="flex-1 text-sm font-medium">{t('lists.overdue')}</span>
+                <span className="flex-1 text-sm font-medium">Overdue</span>
                 <span className="text-xs text-red-600">
                   {tasks.filter(t => {
                     if (!t.dueDateTime || t.status === 'completed') return false;
@@ -357,7 +355,7 @@ export function TodoApp({ onLogout }: TodoAppProps) {
 
           <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
             <div className="p-4 border-b border-gray-100">
-              <h2 className="font-semibold text-gray-900 text-sm uppercase tracking-wide">{t('lists.lists')}</h2>
+              <h2 className="font-semibold text-gray-900 text-sm uppercase tracking-wide">Lists</h2>
             </div>
             <div className="p-2">
               {lists.map(list => (
@@ -395,7 +393,7 @@ export function TodoApp({ onLogout }: TodoAppProps) {
                     type="text"
                     value={newListName}
                     onChange={(e) => setNewListName(e.target.value)}
-                    placeholder={t('lists.listName')}
+                    placeholder="List name"
                     className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                     autoFocus
                   />
@@ -403,7 +401,7 @@ export function TodoApp({ onLogout }: TodoAppProps) {
                     type="submit"
                     className="px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700"
                   >
-                    {t('lists.create')}
+                    Create
                   </button>
                 </form>
               ) : (
@@ -412,7 +410,7 @@ export function TodoApp({ onLogout }: TodoAppProps) {
                   className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                 >
                   <Plus className="w-4 h-4" />
-                  {t('lists.newList')}
+                  New List
                 </button>
               )}
             </div>
@@ -440,13 +438,13 @@ export function TodoApp({ onLogout }: TodoAppProps) {
                 <div className="flex items-center justify-between">
                   <div>
                     <h2 className="text-xl font-bold text-gray-900">
-                      {smartFilter === 'today' && t('lists.today')}
-                      {smartFilter === 'week' && t('lists.week')}
-                      {smartFilter === 'overdue' && t('lists.overdue')}
+                      {smartFilter === 'today' && 'Today'}
+                      {smartFilter === 'week' && 'This Week'}
+                      {smartFilter === 'overdue' && 'Overdue'}
                       {!smartFilter && selectedList?.displayName}
                     </h2>
                     <p className="text-sm text-gray-500 mt-1">
-                      {t('tasks.activeTasks', { count: activeTasks.length })}
+                      {activeTasks.length} {activeTasks.length === 1 ? 'active task' : 'active tasks'}
                     </p>
                   </div>
                 </div>
@@ -460,7 +458,7 @@ export function TodoApp({ onLogout }: TodoAppProps) {
                       type="text"
                       value={newTaskTitle}
                       onChange={(e) => setNewTaskTitle(e.target.value)}
-                      placeholder={t('tasks.addTask')}
+                      placeholder="Add a new task..."
                       className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm"
                     />
                     <button
@@ -469,7 +467,7 @@ export function TodoApp({ onLogout }: TodoAppProps) {
                       className="px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
                     >
                       <Plus className="w-4 h-4" />
-                      <span className="hidden sm:inline">{t('tasks.add')}</span>
+                      <span className="hidden sm:inline">Add</span>
                     </button>
                   </div>
                   <div className="flex items-center gap-2">
@@ -486,7 +484,7 @@ export function TodoApp({ onLogout }: TodoAppProps) {
                         onClick={() => setNewTaskDueDate('')}
                         className="text-xs text-gray-500 hover:text-gray-700"
                       >
-                        {t('tasks.clear')}
+                        Clear
                       </button>
                     )}
                   </div>
@@ -501,8 +499,8 @@ export function TodoApp({ onLogout }: TodoAppProps) {
               ) : tasks.length === 0 ? (
                 <div className="p-12 text-center">
                   <Circle className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                  <p className="text-gray-500">{t('tasks.noTasks')}</p>
-                  <p className="text-sm text-gray-400 mt-1">{t('tasks.addTaskHint')}</p>
+                  <p className="text-gray-500">No tasks</p>
+                  <p className="text-sm text-gray-400 mt-1">Add a new task from the form above</p>
                 </div>
               ) : (
                 <div>
@@ -526,7 +524,7 @@ export function TodoApp({ onLogout }: TodoAppProps) {
                     <div className="border-t border-gray-200">
                       <div className="px-4 py-2 bg-gray-50">
                         <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                          {t('tasks.completed')} ({completedTasks.length})
+                          Completed ({completedTasks.length})
                         </p>
                       </div>
                       <div className="divide-y divide-gray-50">
@@ -548,7 +546,7 @@ export function TodoApp({ onLogout }: TodoAppProps) {
           ) : (
             <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
               <ListTodo className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500 text-lg">{t('tasks.selectList')}</p>
+              <p className="text-gray-500 text-lg">Please select a list</p>
             </div>
           )}
         </main>
@@ -563,7 +561,6 @@ function TaskItem({ task, onToggle, onDelete, onUpdateDueDate }: {
   onDelete: () => void;
   onUpdateDueDate: (dueDate: string | null) => void;
 }) {
-  const { t } = useTranslation();
   const [isEditingDueDate, setIsEditingDueDate] = useState(false);
   const [editDueDate, setEditDueDate] = useState(
     task.dueDateTime ? new Date(task.dueDateTime.dateTime).toISOString().split('T')[0] : ''
@@ -581,7 +578,7 @@ function TaskItem({ task, onToggle, onDelete, onUpdateDueDate }: {
     setIsEditingDueDate(false);
   };
 
-  // 締切日の状態を判定
+  // Determine due date status
   const getDueDateStatus = () => {
     if (!task.dueDateTime || isCompleted) return null;
     
@@ -632,7 +629,7 @@ function TaskItem({ task, onToggle, onDelete, onUpdateDueDate }: {
         <div className="flex items-center gap-3 mt-1">
           {task.importance === 'high' && (
             <span className="flex items-center gap-1 text-xs text-amber-600">
-              <Star className="w-3 h-3" /> 重要
+              <Star className="w-3 h-3" /> Important
             </span>
           )}
           {isEditingDueDate ? (
@@ -648,13 +645,13 @@ function TaskItem({ task, onToggle, onDelete, onUpdateDueDate }: {
                 onClick={handleDueDateSave}
                 className="text-xs text-blue-600 hover:text-blue-800"
               >
-                {t('tasks.save')}
+                Save
               </button>
               <button
                 onClick={handleDueDateCancel}
                 className="text-xs text-gray-500 hover:text-gray-700"
               >
-                {t('tasks.cancel')}
+                Cancel
               </button>
             </div>
           ) : (
@@ -665,8 +662,8 @@ function TaskItem({ task, onToggle, onDelete, onUpdateDueDate }: {
               >
                 <Calendar className="w-3 h-3" />
                 {new Date(task.dueDateTime.dateTime).toLocaleDateString()}
-                {dueDateStatus === 'overdue' && <span className="ml-1">{t('tasks.overdueLabel')}</span>}
-                {dueDateStatus === 'today' && <span className="ml-1">{t('tasks.todayLabel')}</span>}
+                {dueDateStatus === 'overdue' && <span className="ml-1">(Overdue)</span>}
+                {dueDateStatus === 'today' && <span className="ml-1">(Today)</span>}
               </button>
             )
           )}
@@ -676,7 +673,7 @@ function TaskItem({ task, onToggle, onDelete, onUpdateDueDate }: {
               className="opacity-0 group-hover:opacity-100 flex items-center gap-1 text-xs text-gray-400 hover:text-blue-600 transition-opacity"
             >
               <Calendar className="w-3 h-3" />
-              {t('tasks.setDueDate')}
+              Set due date
             </button>
           )}
         </div>
