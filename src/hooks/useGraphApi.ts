@@ -41,13 +41,22 @@ export function useGraphApi() {
     return data.value;
   }, [fetchWithAuth]);
 
-  const createTask = useCallback(async (listId: string, title: string): Promise<TodoTask> => {
+  const createTask = useCallback(async (
+    listId: string,
+    title: string,
+    dueDateTime?: { dateTime: string; timeZone: string }
+  ): Promise<TodoTask> => {
+    const taskData: any = { title };
+    if (dueDateTime) {
+      taskData.dueDateTime = dueDateTime;
+    }
+    
     const response = await fetchWithAuth(`${TODO_ENDPOINT}/lists/${listId}/tasks`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ title }),
+      body: JSON.stringify(taskData),
     });
     if (!response.ok) throw new Error(`Failed to create task: ${response.statusText}`);
     return response.json();
