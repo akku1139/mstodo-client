@@ -1,8 +1,8 @@
 import { Configuration, LogLevel } from '@azure/msal-browser';
 
-// Microsoft To Do 公式アプリのクライアントID
+// Microsoft Graph CLI のクライアントID（Microsoft公式）
 // これにより、ユーザーが自分でAzure ADアプリを登録する必要がなくなります
-export const MICROSOFT_TODO_CLIENT_ID = '871c010f-5e61-4fb1-83ac-98610a6e236f';
+export const MICROSOFT_TODO_CLIENT_ID = '14d82eec-204b-4c2f-b7e8-296a70dab67e';
 
 export const getMsalConfig = (): Configuration => ({
   auth: {
