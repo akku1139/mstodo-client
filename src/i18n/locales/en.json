@@ -53,5 +53,12 @@
     "waiting": "Waiting for authentication...",
     "expiresIn": "Code expires in {{minutes}} minutes",
     "fetchingCode": "Fetching device code..."
+  },
+  "settings": {
+    "title": "Settings",
+    "signedInAs": "Signed in as",
+    "language": "Language",
+    "refresh": "Refresh lists",
+    "logout": "Sign out"
   }
 }

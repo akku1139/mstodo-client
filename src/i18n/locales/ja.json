@@ -52,5 +52,12 @@
     "waiting": "認証を待っています...",
     "expiresIn": "コードの有効期限: {{minutes}}分",
     "fetchingCode": "デバイスコードを取得中..."
+  },
+  "settings": {
+    "title": "設定",
+    "signedInAs": "サインイン中",
+    "language": "言語",
+    "refresh": "リストを更新",
+    "logout": "サインアウト"
   }
 }

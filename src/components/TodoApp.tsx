@@ -2,22 +2,19 @@ import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useGraphApi } from '../hooks/useGraphApi';
 import { TodoTaskList, TodoTask } from '../types';
-import { changeLanguage, getCurrentLanguage } from '../i18n';
 import {
   Plus,
   Trash2,
   Check,
   Circle,
-  LogOut,
   ListTodo,
   Loader2,
   AlertCircle,
-  RefreshCw,
   ChevronRight,
   Star,
   Calendar,
-  Globe,
 } from 'lucide-react';
+import { SettingsPanel } from './SettingsPanel';
 
 interface TodoAppProps {
   onLogout: () => void;
@@ -25,14 +22,7 @@ interface TodoAppProps {
 
 export function TodoApp({ onLogout }: TodoAppProps) {
   const { t } = useTranslation();
-  const [language, setLanguage] = useState<'en' | 'ja'>(getCurrentLanguage());
   const api = useGraphApi();
-
-  const toggleLanguage = () => {
-    const newLang = language === 'en' ? 'ja' : 'en';
-    changeLanguage(newLang);
-    setLanguage(newLang);
-  };
 
   const [lists, setLists] = useState<TodoTaskList[]>([]);
   const [selectedListId, setSelectedListId] = useState<string | null>(null);
@@ -268,31 +258,11 @@ export function TodoApp({ onLogout }: TodoAppProps) {
             </div>
             <h1 className="text-lg font-bold text-gray-900">Microsoft To Do</h1>
           </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={toggleLanguage}
-              className="flex items-center gap-1 px-3 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
-              title="Switch language"
-            >
-              <Globe className="w-4 h-4" />
-              <span className="hidden sm:block">{language === 'en' ? '日本語' : 'English'}</span>
-            </button>
-            <button
-              onClick={loadLists}
-              className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-              title={t('app.refresh')}
-            >
-              <RefreshCw className="w-5 h-5" />
-            </button>
-            <span className="text-sm text-gray-600 hidden sm:block">{userName}</span>
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <LogOut className="w-4 h-4" />
-              <span className="hidden sm:block">{t('app.signOut')}</span>
-            </button>
-          </div>
+          <SettingsPanel
+            userName={userName}
+            onRefresh={loadLists}
+            onLogout={onLogout}
+          />
         </div>
       </header>
 

@@ -9,7 +9,6 @@ import {
   type DeviceCodeResponse,
 } from './auth/deviceCodeFlow';
 import { TodoApp } from './components/TodoApp';
-import { changeLanguage, getCurrentLanguage } from './i18n';
 import { Loader2, CheckCircle, ExternalLink, Copy } from 'lucide-react';
 import './i18n';
 
@@ -21,13 +20,6 @@ function App() {
   const [deviceCode, setDeviceCode] = useState<DeviceCodeResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  const [language, setLanguage] = useState<'en' | 'ja'>(getCurrentLanguage());
-
-  const toggleLanguage = () => {
-    const newLang = language === 'en' ? 'ja' : 'en';
-    changeLanguage(newLang);
-    setLanguage(newLang);
-  };
 
   useEffect(() => {
     checkAuth();
@@ -104,15 +96,6 @@ function App() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
       <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full">
-        <div className="flex justify-end mb-4">
-          <button
-            onClick={toggleLanguage}
-            className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            {language === 'en' ? '日本語' : 'English'}
-          </button>
-        </div>
-
         <div className="text-center mb-6">
           <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <svg className="w-8 h-8 text-white" viewBox="0 0 24 24" fill="currentColor">
