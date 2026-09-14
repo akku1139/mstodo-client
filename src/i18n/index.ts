@@ -10,9 +10,8 @@ const getInitialLanguage = (): string => {
   if (saved && (saved === 'en' || saved === 'ja')) {
     return saved;
   }
-  // ブラウザの言語設定が日本語で始まる場合は日本語、それ以外は英語
-  const browserLang = navigator.language || 'en';
-  return browserLang.startsWith('ja') ? 'ja' : 'en';
+  // デフォルトは英語
+  return 'en';
 };
 
 i18n
