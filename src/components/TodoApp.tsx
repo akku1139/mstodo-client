@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useMsal } from '@azure/msal-react';
 import { useGraphApi } from '../hooks/useGraphApi';
 import { TodoTaskList, TodoTask } from '../types';
 import {
@@ -17,8 +16,11 @@ import {
   Calendar,
 } from 'lucide-react';
 
-export function TodoApp() {
-  const { instance, accounts } = useMsal();
+interface TodoAppProps {
+  onLogout: () => void;
+}
+
+export function TodoApp({ onLogout }: TodoAppProps) {
   const api = useGraphApi();
 
   const [lists, setLists] = useState<TodoTaskList[]>([]);
@@ -150,7 +152,7 @@ export function TodoApp() {
   };
 
   const handleLogout = () => {
-    instance.logoutPopup();
+    onLogout();
   };
 
   const selectedList = lists.find(l => l.id === selectedListId);
