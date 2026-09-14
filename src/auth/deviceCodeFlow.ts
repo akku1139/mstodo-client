@@ -9,9 +9,6 @@ const AUTHORITY = 'https://login.microsoftonline.com/common';
 const SCOPES = 'Tasks.ReadWrite User.Read';
 const TOKEN_CACHE_KEY = 'ms_todo_token_cache';
 
-// CORSプロキシ（公開プロキシを使用）
-const CORS_PROXY = 'https://corsproxy.io/?';
-
 export interface DeviceCodeResponse {
   user_code: string;
   device_code: string;
@@ -42,14 +39,12 @@ export interface AccountInfo {
  * デバイスコードフローを開始
  */
 export async function startDeviceCodeFlow(): Promise<DeviceCodeResponse> {
-  const url = `${CORS_PROXY}${encodeURIComponent(`${AUTHORITY}/oauth2/v2.0/devicecode`)}`;
-  
-  const response = await fetch(url, {
+  const response = await fetch('/api/devicecode', {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
+      'Content-Type': 'application/json',
     },
-    body: new URLSearchParams({
+    body: JSON.stringify({
       client_id: CLIENT_ID,
       scope: SCOPES,
     }),
@@ -78,14 +73,12 @@ export async function pollForToken(
   while (Date.now() - startTime < timeout) {
     await new Promise(resolve => setTimeout(resolve, interval * 1000));
 
-    const url = `${CORS_PROXY}${encodeURIComponent(`${AUTHORITY}/oauth2/v2.0/token`)}`;
-    
-    const response = await fetch(url, {
+    const response = await fetch('/api/token', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Type': 'application/json',
       },
-      body: new URLSearchParams({
+      body: JSON.stringify({
         client_id: CLIENT_ID,
         grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
         device_code: deviceCode,
@@ -127,14 +120,12 @@ export async function pollForToken(
  * リフレッシュトークンを使用してアクセストークンを更新
  */
 export async function refreshAccessToken(refreshToken: string): Promise<TokenResponse> {
-  const url = `${CORS_PROXY}${encodeURIComponent(`${AUTHORITY}/oauth2/v2.0/token`)}`;
-  
-  const response = await fetch(url, {
+  const response = await fetch('/api/token', {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
+      'Content-Type': 'application/json',
     },
-    body: new URLSearchParams({
+    body: JSON.stringify({
       client_id: CLIENT_ID,
       grant_type: 'refresh_token',
       refresh_token: refreshToken,

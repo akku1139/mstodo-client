@@ -10,7 +10,13 @@ export function useGraphApi() {
     const token = await getValidAccessToken();
     if (!token) throw new Error('Not authenticated');
 
-    return fetch(url, {
+    // Convert Graph API URL to proxy URL
+    const proxyUrl = url.replace(
+      'https://graph.microsoft.com/v1.0/',
+      '/api/graph/'
+    );
+
+    return fetch(proxyUrl, {
       ...options,
       headers: {
         ...options.headers,
