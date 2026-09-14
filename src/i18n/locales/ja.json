@@ -1,0 +1,56 @@
+{
+  "app": {
+    "title": "Microsoft To Do",
+    "loading": "読み込み中...",
+    "signOut": "ログアウト",
+    "refresh": "更新"
+  },
+  "auth": {
+    "signIn": "Microsoft でサインイン",
+    "signInSubtitle": "Microsoftアカウントでサインインしてタスクを管理",
+    "signingIn": "認証中...",
+    "authAs": "「Microsoft Graph Command Line Tools」として認証されます",
+    "permissions": "Tasks.ReadWrite の権限のみを要求します"
+  },
+  "lists": {
+    "smartLists": "スマートリスト",
+    "today": "今日",
+    "week": "今週",
+    "overdue": "期限切れ",
+    "lists": "リスト",
+    "newList": "新しいリスト",
+    "listName": "リスト名",
+    "create": "作成",
+    "deleteConfirm": "このリストを削除しますか？"
+  },
+  "tasks": {
+    "addTask": "新しいタスクを追加...",
+    "add": "追加",
+    "noTasks": "タスクがありません",
+    "addTaskHint": "上のフォームから新しいタスクを追加しましょう",
+    "completed": "完了",
+    "activeTasks": "{{count}}件の未完了タスク",
+    "selectList": "リストを選択してください",
+    "createFailed": "タスクの作成に失敗しました",
+    "updateFailed": "タスクの更新に失敗しました",
+    "deleteFailed": "タスクの削除に失敗しました",
+    "dueDateUpdateFailed": "締切日の更新に失敗しました",
+    "listFetchFailed": "リストの取得に失敗しました",
+    "taskFetchFailed": "タスクの取得に失敗しました",
+    "setDueDate": "締切日を設定",
+    "save": "保存",
+    "cancel": "キャンセル",
+    "overdueLabel": "（期限切れ）",
+    "todayLabel": "（今日）",
+    "clear": "クリア"
+  },
+  "deviceCode": {
+    "enterCode": "以下のコードを入力してください",
+    "step1": "{{url}} を開く",
+    "step2": "上記のコードを入力",
+    "step3": "Microsoftアカウントでサインイン",
+    "waiting": "認証を待っています...",
+    "expiresIn": "コードの有効期限: {{minutes}}分",
+    "fetchingCode": "デバイスコードを取得中..."
+  }
+}

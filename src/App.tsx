@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   startDeviceCodeFlow,
   pollForToken,
@@ -8,15 +9,25 @@ import {
   type DeviceCodeResponse,
 } from './auth/deviceCodeFlow';
 import { TodoApp } from './components/TodoApp';
+import { changeLanguage, getCurrentLanguage } from './i18n';
 import { Loader2, CheckCircle, ExternalLink, Copy } from 'lucide-react';
+import './i18n';
 
 type AuthState = 'loading' | 'unauthenticated' | 'authenticating' | 'authenticated';
 
 function App() {
+  const { t } = useTranslation();
   const [authState, setAuthState] = useState<AuthState>('loading');
   const [deviceCode, setDeviceCode] = useState<DeviceCodeResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [language, setLanguage] = useState<'en' | 'ja'>(getCurrentLanguage());
+
+  const toggleLanguage = () => {
+    const newLang = language === 'en' ? 'ja' : 'en';
+    changeLanguage(newLang);
+    setLanguage(newLang);
+  };
 
   useEffect(() => {
     checkAuth();
@@ -80,7 +91,7 @@ function App() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
         <div className="text-center">
           <Loader2 className="w-8 h-8 text-blue-600 animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">読み込み中...</p>
+          <p className="text-gray-600">{t('app.loading')}</p>
         </div>
       </div>
     );
@@ -93,15 +104,24 @@ function App() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
       <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full">
+        <div className="flex justify-end mb-4">
+          <button
+            onClick={toggleLanguage}
+            className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            {language === 'en' ? '日本語' : 'English'}
+          </button>
+        </div>
+
         <div className="text-center mb-6">
           <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <svg className="w-8 h-8 text-white" viewBox="0 0 24 24" fill="currentColor">
               <path d="M11.5 2.5h-9v9h9v-9zm10 0h-9v9h9v-9zm-10 10h-9v9h9v-9zm10 0h-9v9h9v-9z"/>
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Microsoft To Do</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">{t('app.title')}</h1>
           <p className="text-gray-500 text-sm">
-            Microsoft Graph CLI でサインインしてタスクを管理
+            {t('auth.signInSubtitle')}
           </p>
         </div>
 
@@ -117,7 +137,7 @@ function App() {
               <div className="flex items-center gap-2 mb-3">
                 <CheckCircle className="w-5 h-5 text-blue-600" />
                 <p className="text-sm font-medium text-blue-900">
-                  以下のコードを入力してください
+                  {t('deviceCode.enterCode')}
                 </p>
               </div>
 
@@ -129,7 +149,7 @@ function App() {
                   <button
                     onClick={handleCopyCode}
                     className="p-2 text-blue-500 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
-                    title="コードをコピー"
+                    title="Copy code"
                   >
                     {copied ? (
                       <CheckCircle className="w-5 h-5 text-green-500" />
@@ -149,27 +169,27 @@ function App() {
                     rel="noopener noreferrer"
                     className="text-blue-600 hover:underline inline-flex items-center gap-1 font-medium"
                   >
-                    {deviceCode.verification_uri} を開く
+                    {t('deviceCode.step1', { url: deviceCode.verification_uri })}
                     <ExternalLink className="w-3 h-3" />
                   </a>
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="font-bold text-blue-600">2.</span>
-                  <span>上記のコードを入力</span>
+                  <span>{t('deviceCode.step2')}</span>
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="font-bold text-blue-600">3.</span>
-                  <span>Microsoftアカウントでサインイン</span>
+                  <span>{t('deviceCode.step3')}</span>
                 </div>
               </div>
 
               <div className="mt-4 flex items-center justify-center gap-2 text-sm text-blue-600">
                 <Loader2 className="w-4 h-4 animate-spin" />
-                <span>認証を待っています...</span>
+                <span>{t('deviceCode.waiting')}</span>
               </div>
 
               <p className="text-xs text-blue-500 mt-3 text-center">
-                コードの有効期限: {Math.round(deviceCode.expires_in / 60)}分
+                {t('deviceCode.expiresIn', { minutes: Math.round(deviceCode.expires_in / 60) })}
               </p>
             </div>
           </div>
@@ -183,21 +203,21 @@ function App() {
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
               <path d="M11.5 2.5h-9v9h9v-9zm10 0h-9v9h9v-9zm-10 10h-9v9h9v-9zm10 0h-9v9h9v-9z"/>
             </svg>
-            Microsoft でサインイン
+            {t('auth.signIn')}
           </button>
         )}
 
         {authState === 'authenticating' && !deviceCode && (
           <div className="flex items-center justify-center gap-2 text-gray-600">
             <Loader2 className="w-5 h-5 animate-spin" />
-            <span>デバイスコードを取得中...</span>
+            <span>{t('deviceCode.fetchingCode')}</span>
           </div>
         )}
 
         <p className="text-xs text-gray-400 mt-4 text-center">
-          「Microsoft Graph Command Line Tools」として認証されます。
+          {t('auth.authAs')}
           <br />
-          Tasks.ReadWrite の権限のみを要求します。
+          {t('auth.permissions')}
         </p>
       </div>
     </div>

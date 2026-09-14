@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useGraphApi } from '../hooks/useGraphApi';
 import { TodoTaskList, TodoTask } from '../types';
+import { changeLanguage, getCurrentLanguage } from '../i18n';
 import {
   Plus,
   Trash2,
@@ -14,6 +16,7 @@ import {
   ChevronRight,
   Star,
   Calendar,
+  Globe,
 } from 'lucide-react';
 
 interface TodoAppProps {
@@ -21,7 +24,15 @@ interface TodoAppProps {
 }
 
 export function TodoApp({ onLogout }: TodoAppProps) {
+  const { t } = useTranslation();
+  const [language, setLanguage] = useState<'en' | 'ja'>(getCurrentLanguage());
   const api = useGraphApi();
+
+  const toggleLanguage = () => {
+    const newLang = language === 'en' ? 'ja' : 'en';
+    changeLanguage(newLang);
+    setLanguage(newLang);
+  };
 
   const [lists, setLists] = useState<TodoTaskList[]>([]);
   const [selectedListId, setSelectedListId] = useState<string | null>(null);
@@ -60,7 +71,7 @@ export function TodoApp({ onLogout }: TodoAppProps) {
         setSelectedListId(data[0].id);
       }
     } catch (err) {
-      setError('リストの取得に失敗しました');
+      setError(t('tasks.listFetchFailed'));
       console.error(err);
     } finally {
       setLoading(false);
@@ -73,7 +84,7 @@ export function TodoApp({ onLogout }: TodoAppProps) {
       const data = await api.fetchTasks(listId);
       setTasks(data);
     } catch (err) {
-      setError('タスクの取得に失敗しました');
+      setError(t('tasks.taskFetchFailed'));
       console.error(err);
     } finally {
       setTasksLoading(false);
@@ -119,7 +130,7 @@ export function TodoApp({ onLogout }: TodoAppProps) {
       setNewTaskTitle('');
       setNewTaskDueDate('');
     } catch (err) {
-      setError('タスクの作成に失敗しました');
+      setError(t('tasks.createFailed'));
       console.error(err);
     }
   };
@@ -128,9 +139,9 @@ export function TodoApp({ onLogout }: TodoAppProps) {
     const newStatus = task.status === 'completed' ? 'notStarted' : 'completed';
     try {
       const updated = await api.updateTask(selectedListId!, task.id, { status: newStatus });
-      setTasks(tasks.map(t => t.id === task.id ? updated : t));
+      setTasks(tasks.map(task => task.id === updated.id ? updated : task));
     } catch (err) {
-      setError('タスクの更新に失敗しました');
+      setError(t('tasks.updateFailed'));
       console.error(err);
     }
   };
@@ -138,9 +149,9 @@ export function TodoApp({ onLogout }: TodoAppProps) {
   const handleDeleteTask = async (taskId: string) => {
     try {
       await api.deleteTask(selectedListId!, taskId);
-      setTasks(tasks.filter(t => t.id !== taskId));
+      setTasks(tasks.filter(task => task.id !== taskId));
     } catch (err) {
-      setError('タスクの削除に失敗しました');
+      setError(t('tasks.deleteFailed'));
       console.error(err);
     }
   };
@@ -154,9 +165,9 @@ export function TodoApp({ onLogout }: TodoAppProps) {
       const updated = await api.updateTask(selectedListId!, taskId, {
         dueDateTime: dueDateTime as any,
       });
-      setTasks(tasks.map(t => t.id === taskId ? updated : t));
+      setTasks(tasks.map(task => task.id === taskId ? updated : task));
     } catch (err) {
-      setError('締切日の更新に失敗しました');
+      setError(t('tasks.dueDateUpdateFailed'));
       console.error(err);
     }
   };
@@ -172,13 +183,13 @@ export function TodoApp({ onLogout }: TodoAppProps) {
       setNewListName('');
       setShowNewListForm(false);
     } catch (err) {
-      setError('リストの作成に失敗しました');
+      setError(t('tasks.listFetchFailed'));
       console.error(err);
     }
   };
 
   const handleDeleteList = async (listId: string) => {
-    if (!confirm('このリストを削除しますか？')) return;
+    if (!confirm(t('lists.deleteConfirm'))) return;
     try {
       await api.deleteList(listId);
       const remaining = lists.filter(l => l.id !== listId);
@@ -188,7 +199,7 @@ export function TodoApp({ onLogout }: TodoAppProps) {
         setTasks([]);
       }
     } catch (err) {
-      setError('リストの削除に失敗しました');
+      setError(t('tasks.listFetchFailed'));
       console.error(err);
     }
   };
@@ -259,9 +270,17 @@ export function TodoApp({ onLogout }: TodoAppProps) {
           </div>
           <div className="flex items-center gap-3">
             <button
+              onClick={toggleLanguage}
+              className="flex items-center gap-1 px-3 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+              title="Switch language"
+            >
+              <Globe className="w-4 h-4" />
+              <span className="hidden sm:block">{language === 'en' ? '日本語' : 'English'}</span>
+            </button>
+            <button
               onClick={loadLists}
               className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-              title="更新"
+              title={t('app.refresh')}
             >
               <RefreshCw className="w-5 h-5" />
             </button>
@@ -271,7 +290,7 @@ export function TodoApp({ onLogout }: TodoAppProps) {
               className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
             >
               <LogOut className="w-4 h-4" />
-              <span className="hidden sm:block">ログアウト</span>
+              <span className="hidden sm:block">{t('app.signOut')}</span>
             </button>
           </div>
         </div>
@@ -294,7 +313,7 @@ export function TodoApp({ onLogout }: TodoAppProps) {
         <aside className="w-72 flex-shrink-0 hidden md:block">
           <div className="bg-white rounded-xl border border-gray-200 overflow-hidden mb-4">
             <div className="p-4 border-b border-gray-100">
-              <h2 className="font-semibold text-gray-900 text-sm uppercase tracking-wide">スマートリスト</h2>
+              <h2 className="font-semibold text-gray-900 text-sm uppercase tracking-wide">{t('lists.smartLists')}</h2>
             </div>
             <div className="p-2">
               <div
@@ -306,7 +325,7 @@ export function TodoApp({ onLogout }: TodoAppProps) {
                 onClick={() => setSmartFilter(smartFilter === 'today' ? null : 'today')}
               >
                 <Calendar className="w-4 h-4 flex-shrink-0" />
-                <span className="flex-1 text-sm font-medium">今日</span>
+                <span className="flex-1 text-sm font-medium">{t('lists.today')}</span>
                 <span className="text-xs text-gray-500">
                   {tasks.filter(t => {
                     if (!t.dueDateTime || t.status === 'completed') return false;
@@ -328,7 +347,7 @@ export function TodoApp({ onLogout }: TodoAppProps) {
                 onClick={() => setSmartFilter(smartFilter === 'week' ? null : 'week')}
               >
                 <Calendar className="w-4 h-4 flex-shrink-0" />
-                <span className="flex-1 text-sm font-medium">今週</span>
+                <span className="flex-1 text-sm font-medium">{t('lists.week')}</span>
                 <span className="text-xs text-gray-500">
                   {tasks.filter(t => {
                     if (!t.dueDateTime || t.status === 'completed') return false;
@@ -350,7 +369,7 @@ export function TodoApp({ onLogout }: TodoAppProps) {
                 onClick={() => setSmartFilter(smartFilter === 'overdue' ? null : 'overdue')}
               >
                 <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                <span className="flex-1 text-sm font-medium">期限切れ</span>
+                <span className="flex-1 text-sm font-medium">{t('lists.overdue')}</span>
                 <span className="text-xs text-red-600">
                   {tasks.filter(t => {
                     if (!t.dueDateTime || t.status === 'completed') return false;
@@ -368,7 +387,7 @@ export function TodoApp({ onLogout }: TodoAppProps) {
 
           <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
             <div className="p-4 border-b border-gray-100">
-              <h2 className="font-semibold text-gray-900 text-sm uppercase tracking-wide">リスト</h2>
+              <h2 className="font-semibold text-gray-900 text-sm uppercase tracking-wide">{t('lists.lists')}</h2>
             </div>
             <div className="p-2">
               {lists.map(list => (
@@ -406,7 +425,7 @@ export function TodoApp({ onLogout }: TodoAppProps) {
                     type="text"
                     value={newListName}
                     onChange={(e) => setNewListName(e.target.value)}
-                    placeholder="リスト名"
+                    placeholder={t('lists.listName')}
                     className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                     autoFocus
                   />
@@ -414,7 +433,7 @@ export function TodoApp({ onLogout }: TodoAppProps) {
                     type="submit"
                     className="px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700"
                   >
-                    作成
+                    {t('lists.create')}
                   </button>
                 </form>
               ) : (
@@ -423,7 +442,7 @@ export function TodoApp({ onLogout }: TodoAppProps) {
                   className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                 >
                   <Plus className="w-4 h-4" />
-                  新しいリスト
+                  {t('lists.newList')}
                 </button>
               )}
             </div>
@@ -451,13 +470,13 @@ export function TodoApp({ onLogout }: TodoAppProps) {
                 <div className="flex items-center justify-between">
                   <div>
                     <h2 className="text-xl font-bold text-gray-900">
-                      {smartFilter === 'today' && '今日'}
-                      {smartFilter === 'week' && '今週'}
-                      {smartFilter === 'overdue' && '期限切れ'}
+                      {smartFilter === 'today' && t('lists.today')}
+                      {smartFilter === 'week' && t('lists.week')}
+                      {smartFilter === 'overdue' && t('lists.overdue')}
                       {!smartFilter && selectedList?.displayName}
                     </h2>
                     <p className="text-sm text-gray-500 mt-1">
-                      {activeTasks.length}件の未完了タスク
+                      {t('tasks.activeTasks', { count: activeTasks.length })}
                     </p>
                   </div>
                 </div>
@@ -471,7 +490,7 @@ export function TodoApp({ onLogout }: TodoAppProps) {
                       type="text"
                       value={newTaskTitle}
                       onChange={(e) => setNewTaskTitle(e.target.value)}
-                      placeholder="新しいタスクを追加..."
+                      placeholder={t('tasks.addTask')}
                       className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm"
                     />
                     <button
@@ -480,7 +499,7 @@ export function TodoApp({ onLogout }: TodoAppProps) {
                       className="px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
                     >
                       <Plus className="w-4 h-4" />
-                      <span className="hidden sm:inline">追加</span>
+                      <span className="hidden sm:inline">{t('tasks.add')}</span>
                     </button>
                   </div>
                   <div className="flex items-center gap-2">
@@ -497,7 +516,7 @@ export function TodoApp({ onLogout }: TodoAppProps) {
                         onClick={() => setNewTaskDueDate('')}
                         className="text-xs text-gray-500 hover:text-gray-700"
                       >
-                        クリア
+                        {t('tasks.clear')}
                       </button>
                     )}
                   </div>
@@ -512,8 +531,8 @@ export function TodoApp({ onLogout }: TodoAppProps) {
               ) : tasks.length === 0 ? (
                 <div className="p-12 text-center">
                   <Circle className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                  <p className="text-gray-500">タスクがありません</p>
-                  <p className="text-sm text-gray-400 mt-1">上のフォームから新しいタスクを追加しましょう</p>
+                  <p className="text-gray-500">{t('tasks.noTasks')}</p>
+                  <p className="text-sm text-gray-400 mt-1">{t('tasks.addTaskHint')}</p>
                 </div>
               ) : (
                 <div>
@@ -537,7 +556,7 @@ export function TodoApp({ onLogout }: TodoAppProps) {
                     <div className="border-t border-gray-200">
                       <div className="px-4 py-2 bg-gray-50">
                         <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                          完了 ({completedTasks.length})
+                          {t('tasks.completed')} ({completedTasks.length})
                         </p>
                       </div>
                       <div className="divide-y divide-gray-50">
@@ -559,7 +578,7 @@ export function TodoApp({ onLogout }: TodoAppProps) {
           ) : (
             <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
               <ListTodo className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500 text-lg">リストを選択してください</p>
+              <p className="text-gray-500 text-lg">{t('tasks.selectList')}</p>
             </div>
           )}
         </main>
@@ -574,6 +593,7 @@ function TaskItem({ task, onToggle, onDelete, onUpdateDueDate }: {
   onDelete: () => void;
   onUpdateDueDate: (dueDate: string | null) => void;
 }) {
+  const { t } = useTranslation();
   const [isEditingDueDate, setIsEditingDueDate] = useState(false);
   const [editDueDate, setEditDueDate] = useState(
     task.dueDateTime ? new Date(task.dueDateTime.dateTime).toISOString().split('T')[0] : ''
@@ -658,13 +678,13 @@ function TaskItem({ task, onToggle, onDelete, onUpdateDueDate }: {
                 onClick={handleDueDateSave}
                 className="text-xs text-blue-600 hover:text-blue-800"
               >
-                保存
+                {t('tasks.save')}
               </button>
               <button
                 onClick={handleDueDateCancel}
                 className="text-xs text-gray-500 hover:text-gray-700"
               >
-                キャンセル
+                {t('tasks.cancel')}
               </button>
             </div>
           ) : (
@@ -674,9 +694,9 @@ function TaskItem({ task, onToggle, onDelete, onUpdateDueDate }: {
                 className={`flex items-center gap-1 text-xs ${getDueDateColor()} hover:underline`}
               >
                 <Calendar className="w-3 h-3" />
-                {new Date(task.dueDateTime.dateTime).toLocaleDateString('ja-JP')}
-                {dueDateStatus === 'overdue' && <span className="ml-1">（期限切れ）</span>}
-                {dueDateStatus === 'today' && <span className="ml-1">（今日）</span>}
+                {new Date(task.dueDateTime.dateTime).toLocaleDateString()}
+                {dueDateStatus === 'overdue' && <span className="ml-1">{t('tasks.overdueLabel')}</span>}
+                {dueDateStatus === 'today' && <span className="ml-1">{t('tasks.todayLabel')}</span>}
               </button>
             )
           )}
@@ -686,7 +706,7 @@ function TaskItem({ task, onToggle, onDelete, onUpdateDueDate }: {
               className="opacity-0 group-hover:opacity-100 flex items-center gap-1 text-xs text-gray-400 hover:text-blue-600 transition-opacity"
             >
               <Calendar className="w-3 h-3" />
-              締切日を設定
+              {t('tasks.setDueDate')}
             </button>
           )}
         </div>

@@ -1,0 +1,57 @@
+{
+  "app": {
+    "title": "Microsoft To Do",
+    "loading": "Loading...",
+    "signOut": "Sign Out",
+    "refresh": "Refresh"
+  },
+  "auth": {
+    "signIn": "Sign in with Microsoft",
+    "signInSubtitle": "Sign in with your Microsoft account to manage your tasks",
+    "signingIn": "Signing in...",
+    "authAs": "Authenticated as \"Microsoft Graph Command Line Tools\"",
+    "permissions": "Only requests Tasks.ReadWrite permission"
+  },
+  "lists": {
+    "smartLists": "Smart Lists",
+    "today": "Today",
+    "week": "This Week",
+    "overdue": "Overdue",
+    "lists": "Lists",
+    "newList": "New List",
+    "listName": "List name",
+    "create": "Create",
+    "deleteConfirm": "Are you sure you want to delete this list?"
+  },
+  "tasks": {
+    "addTask": "Add a new task...",
+    "add": "Add",
+    "noTasks": "No tasks",
+    "addTaskHint": "Add a new task from the form above",
+    "completed": "Completed",
+    "activeTasks_one": "{{count}} active task",
+    "activeTasks_other": "{{count}} active tasks",
+    "selectList": "Please select a list",
+    "createFailed": "Failed to create task",
+    "updateFailed": "Failed to update task",
+    "deleteFailed": "Failed to delete task",
+    "dueDateUpdateFailed": "Failed to update due date",
+    "listFetchFailed": "Failed to fetch lists",
+    "taskFetchFailed": "Failed to fetch tasks",
+    "setDueDate": "Set due date",
+    "save": "Save",
+    "cancel": "Cancel",
+    "overdueLabel": "(Overdue)",
+    "todayLabel": "(Today)",
+    "clear": "Clear"
+  },
+  "deviceCode": {
+    "enterCode": "Please enter the following code",
+    "step1": "Open {{url}}",
+    "step2": "Enter the code above",
+    "step3": "Sign in with your Microsoft account",
+    "waiting": "Waiting for authentication...",
+    "expiresIn": "Code expires in {{minutes}} minutes",
+    "fetchingCode": "Fetching device code..."
+  }
+}
